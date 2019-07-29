@@ -1,0 +1,89 @@
+<html>
+  <script src="https://aframe.io/releases/0.9.2/aframe.min.js"></script>
+  <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.7.5/aframe/build/aframe-ar.js"></script>
+  <!-- <script src="./assets/three.js"></script>
+  <script src="./assets/draco.js"></script> -->
+
+  <body style="margin : 0px; overflow: hidden;">
+    <script>
+      AFRAME.registerComponent("markerhandler", {
+        init: function() {
+          const animatedMarker = document.querySelector("#animated-marker");
+          // every click, we make our model grow in size :)
+          animatedMarker.addEventListener("click", function(ev, target) {
+            const intersectedElement =
+              ev && ev.detail && ev.detail.intersectedEl;
+            const aEntity = document.querySelector("#sphere");
+            const yellowSphere = document.querySelector("#yellow-sphere");
+            if (intersectedElement !== undefined) {
+              if (aEntity && intersectedElement === aEntity) {
+                const scale = aEntity.getAttribute("scale");
+                Object.keys(scale).forEach(
+                  key => (scale[key] = scale[key] + 1)
+                );
+                aEntity.setAttribute("scale", scale);
+                const material = aEntity.getAttribute("material");
+                Object.keys(material).forEach(key => {
+                  if (key === "color") {
+                    material[key] = "green";
+                  }
+                });
+                aEntity.setAttribute("material", material);
+              }
+
+              if (yellowSphere && intersectedElement === yellowSphere) {
+                const material = yellowSphere.getAttribute("material");
+                Object.keys(material).forEach(key => {
+                  if (key === "color") {
+                    if (material[key] != "green") {
+                      material[key] = "green";
+                    } else {
+                      material[key] = "red";
+                    }
+                  }
+                });
+                yellowSphere.setAttribute("material", material);
+              }
+            }
+          });
+        }
+      });
+    </script>
+    <a-scene
+      embedded
+      arjs="trackingMethod: best; debugUIEnabled: false sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    >
+      <a-marker
+        markerhandler
+        id="animated-marker"
+        emitevents="true"
+        cursor="rayOrigin: mouse"
+        raycaster="objects: .clickable"
+        type="barcode"
+        value="0"
+      >
+        <a-entity
+          id="sphere"
+          class="clickable"
+          geometry="primitive: box"
+          material="opacity: 0.5; color:black;"
+          animation__mouseenter="property: components.material.material.color; type: color; to: blue; startEvents: colorChange; dur: 500"
+          animation__mouseenter="property: components.material.material.color; type: color; to: green; startEvents: touchstart; dur: 500"
+          ;
+        ></a-entity>
+
+        <a-entity
+          id="yellow-sphere"
+          geometry="primitive: box"
+          class="clickable"
+          material="opacity: 0.5; color:yellow;"
+          animation__mouseenter="property: components.material.material.color; type: color; to: blue; startEvents: colorChange; dur: 500"
+          animation__mouseenter="property: components.material.material.color; type: color; to: green; startEvents: touchstart; dur: 500"
+          position="-3 0 0"
+          ;
+        ></a-entity>
+      </a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+*,
+html {
+  font-size: 16px;
+}
+body {
+  margin: 0;
+}
+
+main {
+  min-height: 100vh;
+  margin: 0;
+}
+
+.main-title {
+  text-align: center;
+  font-size: 2rem;
+}
+
+.experiment {
+  border: 1px solid black;
+  border-radius: 3px;
+  min-height: 2rem;
+  margin: 1.5rem;
+}
+
+.experiment-thumbnail {
+  position: relative;
+}
+
+.experiment-thumbnail__image {
+  width: 100%;
+}
+
+.experiment-thumbnail__caption {
+  color: white;
+  background-image: linear-gradient(to right, black, #fefefe);
+  transition: all 0.5s;
+  opacity: 0;
+  padding: 2rem 0 0 0;
+  transform: translateY(-50%);
+  text-align: center;
+  height: 2rem;
+}
+
+.experiment-thumbnail__image:hover + .experiment-thumbnail__caption {
+  /* position: absolute; */
+  /* bottom: 3rem; */
+  opacity: 1;
+}
