@@ -10,43 +10,48 @@
     <script>
       AFRAME.registerComponent("markerhandler", {
         init: function() {
-          const animatedMarker = document.querySelector("#animated-marker");
+          // const markers = document.querySelectorAll(".marker");
+          // markers.forEach(marker => {
+          //   marker.addEventListener("click", function(ev, target) {
+          //     const intersectedElement =
+          //       ev && ev.detail && ev.detail.intersectedEl;
+          //     const parentId = ev.srcElement.id;
+          //     for (let index = 0; index < 5; index++) {
+          //       const childId = `${parentId}_${index}`;
+          //       const intersect = document.getElementById(childId);
+          //       if (
+          //         intersectedElement !== undefined &&
+          //         intersectedElement === intersect
+          //       ) {
+          //         console.log(childId);
+          //       }
+          //     }
+          //   });
+          // });
+          const animatedMarker = document.querySelector("#marker");
           // every click, we make our model grow in size :)
           animatedMarker.addEventListener("click", function(ev, target) {
             const intersectedElement =
               ev && ev.detail && ev.detail.intersectedEl;
-            const aEntity = document.querySelector("#sphere");
-            const yellowSphere = document.querySelector("#yellow-sphere");
-            if (intersectedElement !== undefined) {
-              if (aEntity && intersectedElement === aEntity) {
-                const scale = aEntity.getAttribute("scale");
-                Object.keys(scale).forEach(
-                  key => (scale[key] = scale[key] + 1)
-                );
-                aEntity.setAttribute("scale", scale);
-                const material = aEntity.getAttribute("material");
-                Object.keys(material).forEach(key => {
-                  if (key === "color") {
-                    material[key] = "green";
-                  }
-                });
-                aEntity.setAttribute("material", material);
+            const boxes = document.querySelectorAll(".clickable");
+            boxes.forEach(element => {
+              if (element && intersectedElement === element) {
+                // element.click();
+                // const material = element.getAttribute("material");
+                // Object.keys(material).forEach(key => {
+                //   material[key] = "green";
+                // });
+                // element.setAttribute("material", material);
+              } else {
+                // const material = element.getAttribute("material");
+                // Object.keys(material).forEach(key => {
+                //   if (key === "color") {
+                //     material[key] = "gray";
+                //   }
+                // });
+                // element.setAttribute("material", material);
               }
-
-              if (yellowSphere && intersectedElement === yellowSphere) {
-                const material = yellowSphere.getAttribute("material");
-                Object.keys(material).forEach(key => {
-                  if (key === "color") {
-                    if (material[key] != "green") {
-                      material[key] = "green";
-                    } else {
-                      material[key] = "red";
-                    }
-                  }
-                });
-                yellowSphere.setAttribute("material", material);
-              }
-            }
+            });
           });
         }
       });
@@ -87,15 +92,46 @@
         ></a-entity>
       </a-marker> -->
       <a-marker
-        v-for="(question, index) in questions"
-        :key="index"
+        markerhandler
+        id="marker"
         type="barcode"
-        :value="index"
+        emitevents="true"
+        cursor="rayOrigin: mouse"
+        raycaster="objects: .clickable"
       >
-        <!-- <a-plane color="#000" height="1" width="1" rotation="-90 0 0">
-          <a-text color="#FFF" z-offset="2" :value="question.question"></a-text>
-        </a-plane> -->
-        <a-entity
+        <a-plane
+          v-if="currentQuestion"
+          color="#000"
+          height="1"
+          width="1"
+          rotation="-90 0 0"
+          position="0 0 -2"
+        >
+          <a-text
+            color="#FFF"
+            z-offset="1"
+            :value="decodeURIComponent(currentQuestion.question)"
+            width="1"
+          ></a-text>
+        </a-plane>
+
+        <a-plane
+          color="#000"
+          height="1"
+          width="1"
+          rotation="-90 0 0"
+          position="-2 0 -2"
+        >
+          <a-text
+            color="#FFF"
+            z-offset="1"
+            value="SCORE"
+            width="3"
+            position="0 0 1"
+          ></a-text>
+          <a-text color="#FFF" z-offset="1" :value="score" width="2"></a-text>
+        </a-plane>
+        <!-- <a-entity
           geometry="primitive: plane"
           material="color: #000"
           light="type: point; intensity: 2.0"
@@ -103,148 +139,96 @@
           position="0 0 0"
           scale="2 3 1"
         >
-          <a-text
-            baseline="top"
-            anchor="center"
+          <a-text            
             color="#FFF"
             z-offset="2"
             width="0.5"
             :value="question.question"
           ></a-text>
-        </a-entity>
+        </a-entity> -->
+        <!-- <a-text
+          :value="question.question"
+          geometry="primitive:plane; primitive: plane; height: 10; width: 10;"
+          material="color: #efefef"
+          rotation="-90 0 0"
+          position="-2 0 0"
+          color="#000"
+          width="1"
+          z-offset="1"
+        ></a-text> -->
         <a-entity
-          v-for="(response, resp_index) in createResponseArray(question.correct_answer, question.incorrect_answers)"
+          v-if="currentQuestion"
+          v-for="(response, resp_index) in createResponseArray(currentQuestion.correct_answer, currentQuestion.incorrect_answers)"
           :key="resp_index"
           geometry="primitive: box"
           class="clickable"
-          :material="getColor()"
+          :material="getColor(resp_index)"
           :position="getPosition(resp_index)"
           scale="0.75 1 1"
+          @click="updateScore(response)"
         >
           <a-text
-            color="#FFF"
-            z-offset="2"
-            width="0.5"
-            :value="response"
+            color="#000"
+            z-offset="1"
+            :value="decodeURIComponent(response)"
+            rotation="-90 0 0"
+            width="1"
           ></a-text>
         </a-entity>
       </a-marker>
       <a-entity camera></a-entity>
     </a-scene>
     <script>
-      const questions = [
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "In any programming language, what is the most common way to iterate through an array?",
-          correct_answer: "&#039;For&#039; loops",
-          incorrect_answers: [
-            "&#039;If&#039; Statements",
-            "&#039;Do-while&#039; loops",
-            "&#039;While&#039; loops"
-          ]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question: "What does the &quot;MP&quot; stand for in MP3?",
-          correct_answer: "Moving Picture",
-          incorrect_answers: ["Music Player", "Multi Pass", "Micro Point"]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "Which computer hardware device provides an interface for all other connected devices to communicate?",
-          correct_answer: "Motherboard",
-          incorrect_answers: [
-            "Central Processing Unit",
-            "Hard Disk Drive",
-            "Random Access Memory"
-          ]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "In the programming language Java, which of these keywords would you put on a variable to make sure it doesn&#039;t get modified?",
-          correct_answer: "Final",
-          incorrect_answers: ["Static", "Private", "Public"]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "If you were to code software in this language you&#039;d only be able to type 0&#039;s and 1&#039;s.",
-          correct_answer: "Binary",
-          incorrect_answers: ["JavaScript", "C++", "Python"]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "What is the most preferred image format used for logos in the Wikimedia database?",
-          correct_answer: ".svg",
-          incorrect_answers: [".png", ".jpeg", ".gif"]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question: "In web design, what does CSS stand for?",
-          correct_answer: "Cascading Style Sheet",
-          incorrect_answers: [
-            "Counter Strike: Source",
-            "Corrective Style Sheet",
-            "Computer Style Sheet"
-          ]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question: "How many kilobytes in one gigabyte?",
-          correct_answer: "1000000",
-          incorrect_answers: ["1024", "1000", "1048576"]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question: "What does LTS stand for in the software market?",
-          correct_answer: "Long Term Support",
-          incorrect_answers: [
-            "Long Taco Service",
-            "Ludicrous Transfer Speed",
-            "Ludicrous Turbo Speed"
-          ]
-        },
-        {
-          category: "Science: Computers",
-          type: "multiple",
-          difficulty: "easy",
-          question:
-            "Which programming language shares its name with an island in Indonesia?",
-          correct_answer: "Java",
-          incorrect_answers: ["Python", "C", "Jakarta"]
-        }
+      const colors = [
+        "#462186",
+        "#F264F9",
+        "#3012AB",
+        "#7DC5DB",
+        "#B5281B",
+        "#C023EA",
+        "#83DD1D",
+        "#96EFC7",
+        "#BB9713",
+        "#4EF4BD"
       ];
       var app = new Vue({
         el: "#app",
         data: {
           message: "Hello Vue!",
-          questions
+          questions: [],
+          currentQuestionIndex: 0,
+          currentQuestion: null,
+          score: 0
+        },
+        mounted() {
+          console.log(this);
+          const vm = this;
+          fetch(
+            `/.netlify/functions/getQuiz?id=${Math.floor(Math.random() * 11)}`
+          )
+            .then(function(response) {
+              return response.json();
+            })
+            .then(function(questions) {
+              vm.questions = questions;
+              vm.currentQuestion = questions[0];
+            });
         },
         methods: {
+          updateScore(response) {
+            if (response == this.currentQuestion.correct_answer) {
+              this.score = this.score + 1;
+            }
+
+            if (this.currentQuestionIndex < this.questions.length - 1) {
+              this.currentQuestionIndex = this.currentQuestionIndex + 1;
+              this.currentQuestion = this.questions[this.currentQuestionIndex];
+            } else {
+              this.currentQuestion.correct_answer = null;
+              this.currentQuestion.incorrect_answers = [];
+            }
+          },
           createResponseArray(correct, others) {
-            console.log(_.shuffle([correct, ...others]));
             return _.shuffle([correct, ...others]);
           },
 
@@ -252,8 +236,7 @@
             return `${index}_${resp_index}`;
           },
           getPosition(index) {
-            console.log(index + index * 3);
-            return `${index - 1} -0.5 3`;
+            return `${index - 1} 0 0`;
           },
           getRandomColor() {
             var letters = "0123456789ABCDEF";
@@ -263,8 +246,8 @@
             }
             return color;
           },
-          getColor() {
-            return `opacity: 1; color: ${this.getRandomColor()}`;
+          getColor(index) {
+            return `opacity: 0.5; color: ${colors[index]}`;
           }
         }
       });

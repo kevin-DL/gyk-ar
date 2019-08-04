@@ -1,0 +1,22 @@
+{
+  "name": "gyk-ar",
+  "version": "1.0.0",
+  "description": "Date: 2019-08-05",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/live-server/live-server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevin-DL/gyk-ar.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kevin-DL/gyk-ar/issues"
+  },
+  "homepage": "https://github.com/kevin-DL/gyk-ar#readme",
+  "devDependencies": {
+    "live-server": "^1.2.1"
+  }
+}
