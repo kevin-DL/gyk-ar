@@ -111,7 +111,7 @@
             color="#FFF"
             z-offset="1"
             :value="decodeURIComponent(currentQuestion.question)"
-            width="1"
+            width="2"
           ></a-text>
         </a-plane>
 
@@ -168,11 +168,11 @@
           @click="updateScore(response)"
         >
           <a-text
-            color="#000"
+            color="#FFF"
             z-offset="1"
             :value="decodeURIComponent(response)"
             rotation="-90 0 0"
-            width="1"
+            width="2"
           ></a-text>
         </a-entity>
       </a-marker>
@@ -247,7 +247,7 @@
             return color;
           },
           getColor(index) {
-            return `opacity: 0.5; color: ${colors[index]}`;
+            return `opacity: 1; color: ${colors[index]}`;
           }
         }
       });
