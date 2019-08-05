@@ -160,19 +160,20 @@
           v-if="currentQuestion"
           v-for="(response, resp_index) in createResponseArray(currentQuestion.correct_answer, currentQuestion.incorrect_answers)"
           :key="resp_index"
-          geometry="primitive: box"
+          geometry="primitive: plane"
           class="clickable"
           :material="getColor(resp_index)"
           :position="getPosition(resp_index)"
           scale="0.75 1 1"
+          rotation="-90 0 0"
           @click="updateScore(response)"
         >
           <a-text
             color="#FFF"
             z-offset="1"
             :value="decodeURIComponent(response)"
-            rotation="-90 0 0"
             width="2"
+            wrapCount="10"
           ></a-text>
         </a-entity>
       </a-marker>
